@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .core.logging import get_logger
-
+from routers.api.v1 import product_router
 app = FastAPI()
 logger = get_logger()
 
@@ -8,7 +8,4 @@ logger = get_logger()
 async def startup_event():
     logger.info("Application started")
 
-@app.get('/')
-def root():
-    # logger.info("this is test logger")
-    return {"hello book store api project"}
+app.include_router(router=product_router.router)

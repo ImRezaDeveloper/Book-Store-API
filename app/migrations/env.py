@@ -3,8 +3,12 @@ from app.db.base import Base
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.core.config import settings
-
+from app.models import Book
 from alembic import context
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
