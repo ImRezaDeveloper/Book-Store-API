@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -10,12 +11,13 @@ class Product(BaseModel):
     rating_count: int
     
 class ProductDisplay(BaseModel):
+    id: int
     title: str
-    description: str
+    description: Optional[str]
     price: float
     stock: int
     rating_avg: float
     rating_count: int
-    
+
     class Config:
-        orm_mode=True
+        from_attributes = True

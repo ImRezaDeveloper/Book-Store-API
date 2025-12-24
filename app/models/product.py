@@ -4,7 +4,7 @@ from sqlalchemy import Float, ForeignKey, Integer, String, Column
 # from .author import Author
 class Book(Base):
     __tablename__ = "books"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, index=True)
     description = Column(String, nullable=True)
     price = Column(Float)
