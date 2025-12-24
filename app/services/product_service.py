@@ -2,6 +2,8 @@ from fastapi import Depends, HTTPException
 from app.dependencies import get_db
 from app.models.product import Book
 from sqlalchemy.orm.session import Session
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 def create_product(db: Session, request: Book):
     new_product = Book(
@@ -19,10 +21,8 @@ def create_product(db: Session, request: Book):
     db.refresh(new_product)
     return new_product
 
-def get_product(db: Session, id: int):
-    product = db.query(Book).filter(Book.Id == id).first()
-    
-    if not product:
-        raise HTTPException(status_code=404, detail={"product not found with this id"})
-    
-    return product
+async def get_product(id: int, db: AsyncSession = Depends(get_db)):
+    stmt = select(Book).filter_by(Id=id)
+    result = await db.execute(stmt)
+    book = result.scalars().first()  # scalars() برای گرفتن مدل‌ها
+    return book

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .core.logging import get_logger
-from routers.api.v1 import product_router
+from .routers.api.v1 import product_router
 app = FastAPI()
 logger = get_logger()
 
