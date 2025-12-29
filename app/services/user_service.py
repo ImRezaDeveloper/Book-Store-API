@@ -1,11 +1,11 @@
 from fastapi import Depends, FastAPI, HTTPException, Response
 from sqlalchemy import select
 from app.dependencies import get_db
-from app.models.author import Author
-from app.schemas.author_schemas import Authors
+from app.schemas.user_schemas import GetUser
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models import User, Book
+from app.security.auth.hashing import hash_pwd
 
 app = FastAPI()
 
@@ -40,34 +40,35 @@ async def get_user_by_id(user_id: int, db = Depends(get_db)):
 
     return final
 
-async def create_user(user: Authors, db = Depends(get_db)) -> Author:
-    new_author = Author(
-        name = author.name,
-        bio = author.bio
+async def create_user(user: GetUser, db = Depends(get_db)) -> User:
+    new_user = User(
+        name = user.username,
+        email = user.email,
+        password = hash_pwd(user.password)
     )
     
-    db.add(new_author)
+    db.add(new_user)
     await db.commit()
-    await db.refresh(new_author)
-    return new_author
+    await db.refresh(new_user)
+    return new_user
 
-async def update_author(author_id: int, request: Authors, db: AsyncSession = Depends(get_db)):
-    author = await check_author(author_id=author_id, db=db)
+async def update_user(user_id: int, request: GetUser, db: AsyncSession = Depends(get_db)):
+    user = await check_user(user_id=user_id, db=db)
     
-    updated_author = request.model_dump(exclude_unset=True)
+    updated_user = request.model_dump(exclude_unset=True)
     
-    for key, value in updated_author.items():
-        setattr(author, key, value)
+    for key, value in updated_user.items():
+        setattr(user, key, value)
         
     await db.commit()
-    await db.refresh(author)
+    await db.refresh(user)
     
-    return author
+    return user
 
-async def delete_author(author_id: int, db: AsyncSession = Depends(get_db)):
-    author = await check_author(author_id=author_id, db=db)
+async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    user = await check_user(user_id=user_id, db=db)
         
-    await db.delete(author)
+    await db.delete(user)
     await db.commit()
         
     return Response('user was deleted successfully')
