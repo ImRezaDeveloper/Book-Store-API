@@ -1,5 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
+from typing import Annotated
+
+from app.models.author import Author
 
 
 class Product(BaseModel):
@@ -9,15 +12,17 @@ class Product(BaseModel):
     stock: int
     rating_avg: float
     rating_count: int
+    author_id: int
     
 class ProductDisplay(BaseModel):
     id: int
     title: str
-    description: Optional[str]
+    description: str | None
     price: float
     stock: int
     rating_avg: float
     rating_count: int
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True   # 🔥 مهمه
+    }
