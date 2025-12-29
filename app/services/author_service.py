@@ -4,6 +4,7 @@ from app.dependencies import get_db
 from app.models.author import Author
 from app.schemas.author_schemas import Authors
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 app = FastAPI()
 
@@ -18,7 +19,7 @@ async def check_author(author_id: int, db: AsyncSession) -> Author: # type: igno
     return final
 
 async def get_authors(db = get_db):
-    authors = select(Author)
+    authors = select(Author).options(selectinload(Author.books))
     result = await db.execute(authors)
     final = result.scalars().all()
     if not final:
@@ -29,7 +30,7 @@ async def get_authors(db = get_db):
     return final
 
 async def get_author_by_id(author_id: int, db = Depends(get_db)):
-    author = select(Author).where(Author.id == author_id)
+    author = select(Author).where(Author.id == author_id).options(selectinload(Author.books))
     result = await db.execute(author)
     final = result.scalars().first()
     

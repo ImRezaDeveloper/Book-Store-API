@@ -11,7 +11,7 @@ router = APIRouter(tags=['authors'], prefix='/authors')
 async def get_all_authors(db: AsyncSession = Depends(get_db)):
     return await author_service.get_authors(db)
 
-@router.get('/author/{id}', status_code=200, response_model=Authors)
+@router.get('/author/{id}', status_code=200, response_model=AuthorDisplay)
 async def get_author_id(author_id: int, db: AsyncSession = Depends(get_db)):
     return await author_service.get_author_by_id(author_id, db)
 

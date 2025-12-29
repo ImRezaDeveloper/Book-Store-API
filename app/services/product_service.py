@@ -14,6 +14,7 @@ async def create_product(request: Product, db: AsyncSession) -> Book:
         stock=request.stock,
         rating_avg=request.rating_avg,
         rating_count=request.rating_count,
+        author_id=request.author_id
     )
     
     db.add(new_book)
