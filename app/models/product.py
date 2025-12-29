@@ -14,3 +14,4 @@ class Book(Base):
 
     author_id = Column(Integer, ForeignKey("authors.id"))
     author = relationship("Author", back_populates="books")
+    user = relationship("User", back_populates="books")
