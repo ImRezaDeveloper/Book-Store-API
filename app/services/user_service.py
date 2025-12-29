@@ -19,8 +19,8 @@ async def check_user(user_id: int, db: AsyncSession) -> User: # type: ignore
     
     return final
 
-async def get_users(db = get_db):
-    users = select(User).options(selectinload(Book))
+async def get_users(db = Depends(get_db)):
+    users = select(User).options(selectinload(User.books))
     result = await db.execute(users)
     final = result.scalars().all()
     if not final:
