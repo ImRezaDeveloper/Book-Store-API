@@ -3,6 +3,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     DATABASE_URL: str
     ASYNC_DATABASE_URL: str
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    TOKEN_EXPIRES: int
     
     class Config:
         env_file = ".env"

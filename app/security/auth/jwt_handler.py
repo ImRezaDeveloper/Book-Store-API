@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import HTTPException
-from core.config import ALGORITHM, SECRET_KEY
-from schemas.user_schemas import TokenData
-import jwt
+from app.core.config import settings
+from app.schemas.user_schemas import TokenData
+from jose import jwt
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -13,12 +13,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + timedelta(minutes=15)
     
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 def verify_token(token: str) -> TokenData:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=401, detail="Could not verify Creditials", headers={"WWW-Authenticate": "Bearer"})

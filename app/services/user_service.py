@@ -42,7 +42,7 @@ async def get_user_by_id(user_id: int, db = Depends(get_db)):
 
 async def create_user(user: GetUser, db = Depends(get_db)) -> User:
     new_user = User(
-        name = user.username,
+        username = user.username,
         email = user.email,
         password = hash_pwd(user.password)
     )
