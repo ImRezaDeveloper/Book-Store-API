@@ -13,5 +13,7 @@ class Book(Base):
     rating_count = Column(Integer, default=0)
 
     author_id = Column(Integer, ForeignKey("authors.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
     author = relationship("Author", back_populates="books")
     user = relationship("User", back_populates="books")

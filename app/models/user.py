@@ -9,7 +9,7 @@ class User(Base):
     username = Column(String, unique=True)
     email = Column(String, unique=True)
     password = Column(String)
-    role = Column(String, nullable=False)
+    role = Column(String, nullable=False, default="User")
     is_active = Column(Boolean, default=True)
     
     books = relationship("Book", back_populates="user")
