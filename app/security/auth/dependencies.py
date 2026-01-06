@@ -6,6 +6,7 @@ from app.security.auth.jwt_handler import verify_token
 from app.security.auth.oauth2 import oauth_schemes
 from app.dependencies import get_db
 from app.models.user import User
+from app.models.product import Book
 from sqlalchemy.ext.asyncio import AsyncSession
 
 async def get_current_user(token: Annotated[str, Depends(oauth_schemes)] = None, db: AsyncSession = Depends(get_db)):
@@ -21,4 +22,22 @@ async def get_current_user(token: Annotated[str, Depends(oauth_schemes)] = None,
 def get_current_active_user(current_user: User = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=404, detail="Inactive user")
+    return current_user
+
+async def require_admin(product_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    product = select(Book).filter(Book.id == product_id)
+    result = await db.execute(product)
+    final = result.scalars().first()
+    
+    if current_user.role != "Admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access required"
+        )
+    
+    if final.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Not owner"
+        )
     return current_user

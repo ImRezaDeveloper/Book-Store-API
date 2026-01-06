@@ -19,6 +19,7 @@ class UserDisplay(BaseModel):
     id: int
     username: str
     email: str | None
+    role: Role
     books: list[ProductDisplay]
 
     model_config = {
