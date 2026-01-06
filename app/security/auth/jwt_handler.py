@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import HTTPException
 from app.core.config import settings
 from app.schemas.user_schemas import TokenData
-from jose import jwt
+from jose import jwt, JWTError
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -23,5 +23,5 @@ def verify_token(token: str) -> TokenData:
         if email is None:
             raise HTTPException(status_code=401, detail="Could not verify Creditials", headers={"WWW-Authenticate": "Bearer"})
         return TokenData(email=email)
-    except jwt.PyJWTError:
+    except JWTError:
         raise HTTPException(status_code=401, detail="Could not verify Creditials", headers={"WWW-Authenticate": "Bearer"})
