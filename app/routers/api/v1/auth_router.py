@@ -11,12 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException
 from fastapi import APIRouter
 
-router = APIRouter(tags=['auth'])
+router = APIRouter(tags=['auth'], prefix='/auth')
 
 
 @router.post('/login', response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    user = select(User).where(User.email == form_data.email)
+    user = select(User).where(User.email == form_data.username)
     result = await db.execute(user)
     final = result.scalars().first()
     
