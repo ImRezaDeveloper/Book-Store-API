@@ -24,9 +24,9 @@ def get_current_active_user(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Inactive user")
     return current_user
 
-async def require_admin(product_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    product = select(Book).filter(Book.id == product_id)
-    result = await db.execute(product)
+async def require_admin(user_role: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    user = select(User).filter(User.role == user_role)
+    result = await db.execute(user)
     final = result.scalars().first()
     
     if current_user.role != "Admin":
@@ -35,7 +35,7 @@ async def require_admin(product_id: int, current_user: User = Depends(get_curren
             detail="Admin access required"
         )
     
-    if final.user_id != current_user.id:
+    if final.role != current_user.role:
         raise HTTPException(
             status_code=403,
             detail="Not owner"

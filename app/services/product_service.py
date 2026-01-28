@@ -18,8 +18,8 @@ async def create_product(request: Product, db: AsyncSession) -> Book:
     )
     
     db.add(new_book)
-    await db.commit()        # await اضافه کن
-    await db.refresh(new_book)  # await اضافه کن
+    await db.commit()        
+    await db.refresh(new_book)  
     
     return new_book
 
@@ -43,7 +43,7 @@ async def get_all_products(db: AsyncSession = Depends(get_db)):
 async def update_product(request: ProductDisplay, product_id: int, db: AsyncSession):
     product = select(Book).where(Book.id == product_id)
     result = await db.execute(product)
-    book = result.scalars().first()  
+    book = result.scalars().first()
     
     if not book:
         raise HTTPException(status_code=404, detail="Product not found with this id")
