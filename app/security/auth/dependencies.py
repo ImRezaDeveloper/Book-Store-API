@@ -41,3 +41,45 @@ async def require_admin(user_role: str, current_user: User = Depends(get_current
             detail="Not owner"
         )
     return current_user
+
+async def check_login_user(user_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    user = select(User).filter(User.id == user_id)
+    result = await db.execute(user)
+    final = result.scalars().first()
+    
+    if not final:
+        raise HTTPException(
+            status_code=404,
+            detail="User Not Found!"
+        )
+        
+    if not current_user:
+        raise HTTPException(
+            status_code=404,
+            detail="your are not login in our website!"
+        )
+        
+    return current_user
+
+async def check_exist_book(product_id: int, db = Depends(get_db)):
+    product = select(Book).where(Book.id == product_id)
+    result = await db.execute(product)
+    final = result.scalars().first()
+    
+    if not final:
+        raise HTTPException(
+            status_code=404,
+            detail="Product Not Found!"
+        )
+        
+    return final
+
+async def check_user(user_id: int, db = Depends(get_db)): # type: ignore
+    user = select(User).where(User.id == user_id)
+    result = await db.execute(user)
+    final = result.scalars().first()
+    
+    if not final:
+        raise HTTPException(status_code=404, detail="user not found")
+    
+    return final

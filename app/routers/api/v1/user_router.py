@@ -27,6 +27,10 @@ async def update_user(user_id: int, request: GetUser, db: AsyncSession = Depends
     updated_user = await user_service.update_user(user_id, request, db)
     return updated_user
 
-@router.delete('/delete', status_code=201)
+@router.delete('/delete', status_code=204)
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(dependencies.get_current_active_user)):
     return await user_service.delete_user(user_id, db)
+
+@router.post('/{user_id}/products', status_code=201)
+async def create_product_user(product_id: int, db: AsyncSession = Depends(get_db)):
+    return await user_service.create_product_for_user(product_id, db)

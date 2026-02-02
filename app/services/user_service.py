@@ -6,18 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models import User, Book
 from app.security.auth.hashing import hash_pwd
+from app.security.auth.dependencies import check_login_user, check_exist_book, check_user
+from enum import Enum
 
 app = FastAPI()
-
-async def check_user(user_id: int, db: AsyncSession) -> User: # type: ignore
-    user = select(User).where(User.id == user_id)
-    result = await db.execute(user)
-    final = result.scalars().first()
-    
-    if not final:
-        raise HTTPException(status_code=404, detail="user not found")
-    
-    return final
 
 async def get_users(db = Depends(get_db)):
     users = select(User).options(selectinload(User.books))
@@ -72,3 +64,19 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
     await db.commit()
         
     return Response('user was deleted successfully')
+
+# user_product operations
+
+async def add_product_to_user(user_id: int, product_id: int, db: AsyncSession = Depends(get_db)):
+    product = await check_exist_book(product_id=product_id, db=db)
+    user = await check_user(user_id=user_id, db=db)
+    
+    exists = db.execute(
+        
+    )
+        
+    await db.add(product)
+    await db.commit()
+    await db.refresh(product)
+    
+    return Response("the product added successfully:)", product, user)
