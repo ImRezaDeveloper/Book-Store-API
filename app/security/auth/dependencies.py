@@ -61,7 +61,7 @@ async def check_login_user(user_id: int, current_user: User = Depends(get_curren
         
     return current_user
 
-async def check_exist_book(product_id: int, db = Depends(get_db)):
+async def check_exist_book(product_id: int, db: AsyncSession):
     product = select(Book).where(Book.id == product_id)
     result = await db.execute(product)
     final = result.scalars().first()

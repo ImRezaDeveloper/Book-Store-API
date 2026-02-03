@@ -67,16 +67,23 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 # user_product operations
 
-async def add_product_to_user(user_id: int, product_id: int, db: AsyncSession = Depends(get_db)):
+async def add_product_to_user(product_id: int, user_id: int, db: AsyncSession = Depends(get_db)):
     product = await check_exist_book(product_id=product_id, db=db)
     user = await check_user(user_id=user_id, db=db)
     
-    exists = db.execute(
-        
-    )
-        
-    await db.add(product)
+    product.user_id = user.id
+    
+    # if product.user_id is not None:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="product is already assigned to a user"
+    #     )
+    
     await db.commit()
     await db.refresh(product)
     
-    return Response("the product added successfully:)", product, user)
+    return {
+            "message": "product added to user successfully",
+            "user_id": user.id,
+            "product_id": product.id
+        }
