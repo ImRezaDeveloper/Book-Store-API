@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models import User, Book
 from app.security.auth.hashing import hash_pwd
-from app.security.auth.dependencies import check_login_user, check_exist_book, check_user
+from app.security.auth.dependencies import check_login_user, check_exist_book, check_user, get_current_user
 from enum import Enum
 
 app = FastAPI()
@@ -73,11 +73,11 @@ async def add_product_to_user(product_id: int, user_id: int, db: AsyncSession = 
     
     product.user_id = user.id
     
-    # if product.user_id is not None:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="product is already assigned to a user"
-    #     )
+    if product.user_id == user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Product already assigned to this user"
+        )
     
     await db.commit()
     await db.refresh(product)
@@ -87,3 +87,6 @@ async def add_product_to_user(product_id: int, user_id: int, db: AsyncSession = 
             "user_id": user.id,
             "product_id": product.id
         }
+    
+async def get_user_products(user: User):
+    return user.books
