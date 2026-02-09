@@ -19,7 +19,7 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db), admin
     return products
 
 @router.get('')
-async def get_products(db: AsyncSession = Depends(get_db)):
+async def get_products(db: AsyncSession = Depends(get_db), admin: bool = Depends(require_admin)):
     products = await product_service.get_all_products(db)
     if not products:
         raise HTTPException(status_code=404, detail="db is empty!")

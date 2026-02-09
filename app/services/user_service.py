@@ -1,17 +1,17 @@
 from fastapi import Depends, FastAPI, HTTPException, Response
 from sqlalchemy import select
 from app.dependencies import get_db
-from app.schemas.user_schemas import GetUser
+from app.schemas.user_schemas import UserUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models import User, Book
 from app.security.auth.hashing import hash_pwd
-from app.security.auth.dependencies import check_login_user, check_exist_book, check_user, get_current_user
+from app.security.auth.dependencies import check_login_user, check_exist_book, get_current_user
 from enum import Enum
 
 app = FastAPI()
 
-async def get_users(db = Depends(get_db)):
+async def get_users(db: AsyncSession = Depends(get_db)):
     users = select(User).options(selectinload(User.books))
     result = await db.execute(users)
     final = result.scalars().all()
@@ -22,7 +22,7 @@ async def get_users(db = Depends(get_db)):
         )
     return final
 
-async def get_user_by_id(user_id: int, db = Depends(get_db)):
+async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
     user = select(User).where(User.id == user_id).options(selectinload(User.books))
     result = await db.execute(user)
     final = result.scalars().first()
@@ -32,7 +32,7 @@ async def get_user_by_id(user_id: int, db = Depends(get_db)):
 
     return final
 
-async def create_user(user: GetUser, db = Depends(get_db)) -> User:
+async def create_user(user: UserUpdate, db = Depends(get_db)) -> User:
     new_user = User(
         username = user.username,
         email = user.email,
@@ -44,21 +44,25 @@ async def create_user(user: GetUser, db = Depends(get_db)) -> User:
     await db.refresh(new_user)
     return new_user
 
-async def update_user(user_id: int, request: GetUser, db: AsyncSession = Depends(get_db)):
-    user = await check_user(user_id=user_id, db=db)
+async def update_user(request: UserUpdate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+
+    update_data = request.model_dump(exclude_unset=True)
     
-    updated_user = request.model_dump(exclude_unset=True)
-    
-    for key, value in updated_user.items():
-        setattr(user, key, value)
+    for key, value in update_data.items():
+        setattr(current_user, key, value)
         
     await db.commit()
-    await db.refresh(user)
-    
-    return user
+    await db.refresh(current_user)
+    print("THIS IS USER", current_user)
+    return current_user
 
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = await check_user(user_id=user_id, db=db)
+async def delete_user(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    user = await current_user
+    
+    if not user:
+        return {
+            "error": "you don't have permission to delete users"
+        }
         
     await db.delete(user)
     await db.commit()
@@ -67,13 +71,13 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
 
 # user_product operations
 
-async def add_product_to_user(product_id: int, user_id: int, db: AsyncSession = Depends(get_db)):
+async def add_product_to_user(product_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     product = await check_exist_book(product_id=product_id, db=db)
-    user = await check_user(user_id=user_id, db=db)
+    # user = await check_user(user_id=user_id, db=db)
     
-    product.user_id = user.id
+    product.user_id = current_user.id
     
-    if product.user_id == user.id:
+    if product.user_id == current_user.id:
         raise HTTPException(
             status_code=400,
             detail="Product already assigned to this user"
@@ -84,9 +88,15 @@ async def add_product_to_user(product_id: int, user_id: int, db: AsyncSession = 
     
     return {
             "message": "product added to user successfully",
-            "user_id": user.id,
+            "user_id": current_user.id,
             "product_id": product.id
         }
     
 async def get_user_products(user: User):
-    return user.books
+    try:
+        return user.books
+    except:
+        return {"message": "you don't have any books in your carts"}
+
+async def get_me(current_user: User):
+    return current_user

@@ -5,6 +5,7 @@ from app.models.product import Book
 from app.schemas.product_schemas import Product, ProductDisplay
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.security.auth.dependencies import require_admin
 
 async def create_product(request: Product, db: AsyncSession) -> Book:
     new_book = Book(
@@ -20,7 +21,7 @@ async def create_product(request: Product, db: AsyncSession) -> Book:
     db.add(new_book)
     await db.commit()        
     await db.refresh(new_book)  
-    
+
     return new_book
 
 async def get_product(id: int, db: AsyncSession = Depends(get_db)):
