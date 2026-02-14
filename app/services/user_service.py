@@ -76,13 +76,13 @@ async def delete_user(current_user: User = Depends(get_current_user), db: AsyncS
 async def add_product_to_user(product_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     product = await check_exist_book(product_id=product_id, db=db)
     
-    if product.user_id == current_user.id:
+    if current_user in product.users:
         raise HTTPException(
             status_code=400,
             detail="Product already assigned to this user"
         )
         
-    product.user_id = current_user.id
+    product.users.append(current_user)
         
     # await db.add(product)
     await db.commit()

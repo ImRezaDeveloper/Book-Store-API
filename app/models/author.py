@@ -1,9 +1,7 @@
 from app.db.base import Base
 from sqlalchemy import Integer, String, Column
-# from .product import Book
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.models.product import Book
 
 class Author(Base):
     __tablename__ = "authors"

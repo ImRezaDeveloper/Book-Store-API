@@ -8,6 +8,7 @@ from app.dependencies import get_db
 from app.models.user import User
 from app.models.product import Book
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 async def get_current_user(token: Annotated[str, Depends(oauth_schemes)] = None, db: AsyncSession = Depends(get_db)):
     token_data = verify_token(token)   
@@ -54,15 +55,14 @@ async def check_login_user(user_id: int, current_user: User = Depends(get_curren
         
     return current_user
 
-async def check_exist_book(product_id: int, db: AsyncSession = Depends(get_db)):
-    product = select(Book).filter(Book.id == product_id)
-    result = await db.execute(product)
-    final = result.scalars().first()
-    
-    if not final:
-        raise HTTPException(
-            status_code=404,
-            detail="Product Not Found!"
-        )
-        
-    return final
+async def check_exist_book(product_id: int, db: AsyncSession):
+    stmt = (
+        select(Book)
+        .where(Book.id == product_id)
+        .options(selectinload(Book.users))   # یا joinedload اگر one-to-many باشه
+    )
+    result = await db.execute(stmt)
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(404, "Product not found")
+    return product

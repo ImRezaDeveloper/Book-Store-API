@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.db.base import Base
 from app.models.product import Book
-from app.models.associations import user_book
+from .associations import user_book
 
 
 class User(Base):

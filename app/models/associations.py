@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey, Table
-from db.base import Base
+from app.db.base import Base
 
 user_book = Table(
     "user_books",
