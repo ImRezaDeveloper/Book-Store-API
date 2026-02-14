@@ -48,12 +48,14 @@ async def update_user(request: UserUpdate, current_user: User = Depends(get_curr
 
     update_data = request.model_dump(exclude_unset=True)
     
+    if "password" in update_data:
+        current_user.password = hash_pwd(update_data.pop("password"))
+    
     for key, value in update_data.items():
         setattr(current_user, key, value)
         
     await db.commit()
     await db.refresh(current_user)
-    print("THIS IS USER", current_user)
     return current_user
 
 async def delete_user(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
@@ -71,18 +73,18 @@ async def delete_user(current_user: User = Depends(get_current_user), db: AsyncS
 
 # user_product operations
 
-async def add_product_to_user(product_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def add_product_to_user(product_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     product = await check_exist_book(product_id=product_id, db=db)
-    # user = await check_user(user_id=user_id, db=db)
-    
-    product.user_id = current_user.id
     
     if product.user_id == current_user.id:
         raise HTTPException(
             status_code=400,
             detail="Product already assigned to this user"
         )
-    
+        
+    product.user_id = current_user.id
+        
+    # await db.add(product)
     await db.commit()
     await db.refresh(product)
     
@@ -92,11 +94,22 @@ async def add_product_to_user(product_id: int, current_user: User = Depends(get_
             "product_id": product.id
         }
     
-async def get_user_products(user: User):
-    try:
-        return user.books
-    except:
-        return {"message": "you don't have any books in your carts"}
+async def get_user_products(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    products = select(Book).filter(Book.id == current_user.id)
+    result = await db.execute(products)
+    final = result.scalars().all()
+    
+    if not final:
+        raise HTTPException(
+            status_code=400,
+            detail="you don't have any product in your cart"
+        )
+        
+    products.user_id = current_user.id
+    
+    return {
+        "products": final
+    }
 
 async def get_me(current_user: User):
     return current_user

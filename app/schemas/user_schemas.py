@@ -13,6 +13,12 @@ class UserUpdate(BaseModel):
     username: str
     email: EmailStr | None = Field(default=None)
     password: str
+    
+class UserRegister(BaseModel):
+    username: str
+    email: EmailStr | None = Field(default=None)
+    password: str
+    role: Role
 
 class UserDisplay(BaseModel):
     id: int

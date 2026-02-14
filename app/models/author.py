@@ -1,13 +1,16 @@
 from app.db.base import Base
 from sqlalchemy import Integer, String, Column
 # from .product import Book
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+
+from app.models.product import Book
 
 class Author(Base):
     __tablename__ = "authors"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String, index=True)
     bio = Column(String, nullable=True)
 
-    books = relationship("Book", back_populates="author")
+    books: Mapped[list["Book"]] = relationship("Book", back_populates="author")
+        
