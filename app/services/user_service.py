@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException, Response
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from app.dependencies import get_db
+from app.models.associations import UserBook
 from app.schemas.user_schemas import UserUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -82,11 +83,14 @@ async def add_product_to_user(product_id: int, db: AsyncSession = Depends(get_db
             detail="Product already assigned to this user"
         )
         
-    product.users.append(current_user)
-        
-    # await db.add(product)
+    stmt = insert(UserBook).values(
+        user_id = current_user.id,
+        book_id = product.id
+    )
+    
+    await db.execute(stmt)
     await db.commit()
-    await db.refresh(product)
+    await db.refresh(product, attribute_names=["users"])
     
     return {
             "message": "product added to user successfully",
@@ -94,8 +98,9 @@ async def add_product_to_user(product_id: int, db: AsyncSession = Depends(get_db
             "product_id": product.id
         }
     
+    
 async def get_user_products(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    products = select(Book).filter(Book.id == current_user.id)
+    products = select(UserBook).filter(UserBook.user_id == current_user.id)
     result = await db.execute(products)
     final = result.scalars().all()
     
@@ -105,7 +110,7 @@ async def get_user_products(current_user: User = Depends(get_current_user), db: 
             detail="you don't have any product in your cart"
         )
         
-    products.user_id = current_user.id
+    UserBook.user_id = current_user.id
     
     return {
         "products": final

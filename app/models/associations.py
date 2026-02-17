@@ -12,6 +12,5 @@ class UserBook(Base):
     # borrowed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     # returned_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     rating: Mapped[int] = mapped_column(Integer, nullable=True)  # مثلاً 1 تا 5
-
-    user: Mapped["User"] = relationship("User", back_populates="user_books")
-    book: Mapped["Book"] = relationship("Book", back_populates="user_books")
+    user: Mapped[list["User"]] = relationship("User", back_populates="user_books")
+    book: Mapped[list["Book"]] = relationship("Book", back_populates="user_books")
