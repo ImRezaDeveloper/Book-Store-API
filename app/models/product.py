@@ -2,7 +2,7 @@ from app.db.base import Base
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy import Float, ForeignKey, Integer, String, Column
 
-from .associations import user_book
+from .associations import UserBook
 
 class Book(Base):
     __tablename__ = "books"
@@ -18,8 +18,14 @@ class Book(Base):
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey("authors.id"))
     author: Mapped["Author"] = relationship("Author", back_populates="books")
     
+    user_books: Mapped[list["UserBook"]] = relationship(
+            "UserBook",
+            back_populates="book"
+        )
+    
     users: Mapped[list["User"]] = relationship(
         "User",
-        secondary=user_book,
-        back_populates="books"
+        secondary="users_books",
+        back_populates="books",
+        viewonly=True
     )

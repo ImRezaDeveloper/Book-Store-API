@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.db.base import Base
 from app.models.product import Book
-from .associations import user_book
+from .associations import UserBook
 
 
 class User(Base):
@@ -15,11 +15,17 @@ class User(Base):
     role: Mapped[str] = mapped_column(String, default="User")
     is_active: Mapped[bool] = mapped_column(default=True)
     
-    # رابطه many-to-many با کتاب‌ها
     books: Mapped[list["Book"]] = relationship(
         "Book",
-        secondary=user_book,             # ← مهم
-        back_populates="users"
+        secondary="users_books",
+        back_populates="users",
+        viewonly=True
+    )
+    
+    user_books: Mapped[list["UserBook"]] = relationship(
+        "UserBook",
+        back_populates="user",
+        cascade="all, delete-orphan"   # اختیاری
     )
     # orders = relationship("Order", back_populates="user")
     # comments = relationship("Comment", back_populates="user")
