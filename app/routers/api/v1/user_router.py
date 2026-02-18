@@ -20,7 +20,7 @@ async def get_user_id(user_id: int, db: AsyncSession = Depends(get_db), admin: b
     return await user_service.get_user_by_id(user_id, db)
 
 @router.post('/new', status_code=201, response_model=UserRegister)
-async def create_user(user: UserRegister, db: AsyncSession = Depends(get_db)):
+async def create_user(user: UserRegister, db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_user)):
     return await user_service.create_user(user, db)
 
 @router.put('/update', status_code=200)
@@ -34,6 +34,10 @@ async def update_user(
 @router.delete('/delete', status_code=204)
 async def delete_user(db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_active_user)):
     return await user_service.delete_user(current_user, db)
+
+@router.delete('/delete/{user_id}', status_code=204)
+async def delete_user_admin(user_id: int, db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_user)):
+    return await user_service.delete_user_by_admin(user_id, db)
 
 @router.post('/products', status_code=201)
 async def create_product_user(product_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(dependencies.get_current_user)):
