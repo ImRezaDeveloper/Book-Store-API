@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from app.schemas.product_schemas import Product, ProductDisplay
+from app.schemas.product_schemas import Product, ProductDisplay, ProductUpdate
 from sqlalchemy.orm.session import Session
 from app.services import product_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,10 +26,10 @@ async def get_products(db: AsyncSession = Depends(get_db), admin: bool = Depends
     return products
 
 # router.py
-@router.put("/update/{product_id}")  # بهتره id توی مسیر باشه، نه بدنه
+@router.patch("/update/{product_id}")
 async def update_product_endpoint(
     product_id: int,
-    request: ProductDisplay,
+    request: ProductUpdate,
     db: AsyncSession = Depends(get_db),
     admin: bool = Depends(require_admin)
 ):

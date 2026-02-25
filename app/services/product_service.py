@@ -2,10 +2,11 @@ from fastapi import Depends, HTTPException, Response
 from sqlalchemy import delete, insert, update
 from app.dependencies import get_db
 from app.models.product import Book
-from app.schemas.product_schemas import Product, ProductDisplay
+from app.schemas.product_schemas import Product, ProductDisplay, ProductUpdate
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.security.auth.dependencies import require_admin
+from app.repositories.selector import product_repo
 
 async def create_product(request: Product, db: AsyncSession) -> Book:
     new_book = Book(
@@ -25,49 +26,17 @@ async def create_product(request: Product, db: AsyncSession) -> Book:
     return new_book
 
 async def get_product(id: int, db: AsyncSession = Depends(get_db)):
-    stmt = select(Book).filter_by(id=id)
-    result = await db.execute(stmt)
-    book = result.scalars().first()
-    if not book:
-        raise HTTPException(
-            status_code=404,
-            detail="Book not found with this id"  # بهتره string باشه یا dict با ساختار مشخص
-        )
-    return book
-
-async def get_all_products(db: AsyncSession = Depends(get_db)):
-    products = select(Book)
-    result = await db.execute(products)
-    product = result.scalars().all()
+    product = await product_repo.get_product_by_id(id=id, db=db)
     return product
 
-async def update_product(request: ProductDisplay, product_id: int, db: AsyncSession):
-    product = select(Book).where(Book.id == product_id)
-    result = await db.execute(product)
-    book = result.scalars().first()
-    
-    if not book:
-        raise HTTPException(status_code=404, detail="Product not found with this id")
-    
-    update_data = request.dict(exclude_unset=True)
-    
-    for key, value in update_data.items():
-        setattr(book, key, value)
-    
-    await db.commit()
-    
-    await db.refresh(book)
-    
-    return book
+async def get_all_products(db: AsyncSession = Depends(get_db)):
+    products = await product_repo.get_all_products(db=db)
+    return products
+
+async def update_product(request: ProductUpdate, product_id: int, db: AsyncSession):
+    product = await product_repo.update_product(request=request, product_id=product_id, db=db)
+    return product
 
 async def delete_product(product_id: int, db: AsyncSession):
-    product = select(Book).where(Book.id == product_id)
-    result = await db.execute(product)
-    book = result.scalars().first()
-    
-    if not book:
-        raise HTTPException(status_code=404, detail="Product not found with this id")
-
-    await db.delete(book)
-    await db.commit()
-    return Response("product successfully deleted!", status_code=201)
+    product = await product_repo.delete_product(product_id=product_id, db=db)
+    return product

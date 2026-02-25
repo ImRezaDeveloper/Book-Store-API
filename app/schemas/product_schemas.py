@@ -24,9 +24,23 @@ class ProductDisplay(BaseModel):
     rating_count: int
 
     model_config = {
-        "from_attributes": True   # 🔥 مهمه
+        "from_attributes": True
     }
-
+class ProductUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    price: float | None = None
+    stock: int | None = None
+    rating_avg: float | None = None
+    rating_count: int | None = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "price": 200
+            }
+        }
+    
 class ProductUserDisplay(BaseModel):
     id: int
     title: str
@@ -35,5 +49,5 @@ class ProductUserDisplay(BaseModel):
     rating_avg: float
 
     model_config = {
-        "from_attributes": True   # 🔥 مهمه
+        "from_attributes": True
     }
