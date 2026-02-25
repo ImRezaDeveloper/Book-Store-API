@@ -26,3 +26,14 @@ class ProductDisplay(BaseModel):
     model_config = {
         "from_attributes": True   # 🔥 مهمه
     }
+
+class ProductUserDisplay(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    price: float
+    rating_avg: float
+
+    model_config = {
+        "from_attributes": True   # 🔥 مهمه
+    }

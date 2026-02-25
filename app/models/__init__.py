@@ -1,5 +1,4 @@
-from .product import Book
 from .author import Author
+from .product import Book
 from .user import User
-# from .order import Order
-# from .comment import Comment
+from .associations import UserBook

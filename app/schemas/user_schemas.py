@@ -2,23 +2,29 @@ from pydantic import BaseModel, EmailStr, Field
 from .product_schemas import ProductDisplay
 from typing import Annotated, Optional
 import enum
+# from security.auth.hashing import hash_pwd
 
 class Role(str, enum.Enum):
     ADMIN = 'Admin'
     USER = 'User'
 
 
-class GetUser(BaseModel):
+class UserUpdate(BaseModel):
     username: str
     email: EmailStr | None = Field(default=None)
-    role: Role = Role.USER
-    is_active: Annotated[bool, True] = True
     password: str
+    
+class UserRegister(BaseModel):
+    username: str
+    email: EmailStr | None = Field(default=None)
+    password: str
+    role: Role
 
 class UserDisplay(BaseModel):
     id: int
     username: str
     email: str | None
+    role: Role
     books: list[ProductDisplay]
 
     model_config = {

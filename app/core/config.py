@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     TOKEN_EXPIRES: int
+    REDIS_URL: str
     
     class Config:
         env_file = ".env"

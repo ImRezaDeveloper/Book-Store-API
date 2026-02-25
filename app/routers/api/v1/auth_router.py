@@ -5,7 +5,7 @@ from app.security.auth.hashing import hash_pwd, verify_pwd
 from app.security.auth.jwt_handler import create_access_token
 from app.core.config import settings
 from app.dependencies import get_db
-from app.schemas.user_schemas import Token, GetUser, UserDisplay
+from app.schemas.user_schemas import Token, UserUpdate, UserDisplay
 from app.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException
