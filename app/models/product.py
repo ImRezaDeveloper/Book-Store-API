@@ -29,3 +29,5 @@ class Book(Base):
         back_populates="books",
         viewonly=True
     )
+    
+    # INDEXING
