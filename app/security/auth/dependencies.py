@@ -1,4 +1,5 @@
 
+from datetime import datetime
 from typing import Annotated
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
@@ -66,3 +67,20 @@ async def check_exist_book(product_id: int, db: AsyncSession):
     if not product:
         raise HTTPException(404, "Product not found")
     return product
+
+
+async def soft_delete_user(db: AsyncSession, current_user: User):
+    user = await db.execute(
+        select(User).where(User.id == current_user.id)
+    )
+    final = user.scalar_one_or_none()
+    
+    if not final:
+        return None
+    
+    final.is_deleted = True
+    final.deleted_at = datetime.utcnow()
+    
+    await db.commit()
+    await db.refresh(final)
+    return final

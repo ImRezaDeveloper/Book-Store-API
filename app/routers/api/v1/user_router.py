@@ -12,8 +12,8 @@ router = APIRouter(tags=['users'], prefix='/users')
 
 @router.get("", status_code=200, response_model=List[UserDisplay])
 async def get_all_users(db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin)):
-    return await user_service.get_users(db)
-
+    return await user_service.get_users(db=db)
+    
 
 @router.get('/user/{id}', status_code=200, response_model=UserDisplay)
 async def get_user_id(user_id: int, db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_active_user)):
@@ -23,7 +23,7 @@ async def get_user_id(user_id: int, db: AsyncSession = Depends(get_db), admin: b
 async def create_user(user: UserRegister, db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_user)):
     return await user_service.create_user(user, db)
 
-@router.put('/update', status_code=200)
+@router.patch('/update', status_code=200)
 async def update_user(
     user: UserUpdate,
     current_user: User = Depends(dependencies.get_current_user),
@@ -32,8 +32,8 @@ async def update_user(
     return await user_service.update_user(user, current_user, db)
 
 @router.delete('/delete', status_code=204)
-async def delete_user(db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_active_user)):
-    return await user_service.delete_user(current_user, db)
+async def delete_user(db: AsyncSession = Depends(get_db),current_user: User = Depends(dependencies.get_current_active_user)):
+    return await user_service.delete_user(db, current_user)
 
 @router.delete('/delete/{user_id}', status_code=204)
 async def delete_user_admin(user_id: int, db: AsyncSession = Depends(get_db), admin: bool = Depends(dependencies.require_admin), current_user: User = Depends(dependencies.get_current_user)):

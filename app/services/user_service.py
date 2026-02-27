@@ -7,31 +7,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.models import User, Book
 from app.security.auth.hashing import hash_pwd
-from app.security.auth.dependencies import check_login_user, check_exist_book, get_current_user, require_admin
+from app.security.auth.dependencies import check_login_user, check_exist_book, get_current_user, require_admin, soft_delete_user
 from enum import Enum
-
+from app.repositories.selector import user_repo
 app = FastAPI()
 
 async def get_users(db: AsyncSession = Depends(get_db)):
-    users = select(User).options(selectinload(User.books))
-    result = await db.execute(users)
-    final = result.scalars().all()
-    if not final:
-        raise HTTPException(
-            status_code=404,
-            detail="DB is empty!"
-        )
-    return final
+    users = await user_repo.get_all_users(db=db)
+    if not users:
+        raise HTTPException(status_code=404, detail="there are not users in db!")
+    
+    return users
 
 async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = select(User).where(User.id == user_id).options(selectinload(User.books))
-    result = await db.execute(user)
-    final = result.scalars().first()
-    
-    if not final:
+    user = await user_repo.get_user_by_id(user_id=user_id, db=db)
+    if not user:
         raise HTTPException(status_code=404, detail="the user not found with this id!")
 
-    return final
+    return user
 
 async def create_user(user: UserRegister, db = Depends(get_db)) -> User:
     new_user = User(
@@ -47,43 +40,21 @@ async def create_user(user: UserRegister, db = Depends(get_db)) -> User:
     return new_user
 
 async def update_user(request: UserUpdate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    user_update = await user_repo.update_user(request=request, current_user=current_user, db=db)
+    return user_update
 
-    update_data = request.model_dump(exclude_unset=True)
-    
-    if "password" in update_data:
-        current_user.password = hash_pwd(update_data.pop("password"))
-    
-    for key, value in update_data.items():
-        setattr(current_user, key, value)
-        
-    await db.commit()
-    await db.refresh(current_user)
-    return current_user
 
-async def delete_user(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    user = current_user
-        
-    await db.delete(user)
-    await db.commit()
-        
-    return Response('user was deleted successfully')
+async def delete_user(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    user = await soft_delete_user(db, current_user)
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "user was soft deleted successfully"}
 
-async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = select(User).filter(User.id == user_id)
-    result = await db.execute(user)
-    final = result.scalars().first()
-    
-    if not final:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found!"
-        )
-        
-    
-    await db.delete(final)
-    await db.commit()
-        
-    return Response('user was deleted successfully')
 
 # user_product operations
 
@@ -113,21 +84,14 @@ async def add_product_to_user(product_id: int, db: AsyncSession = Depends(get_db
     
     
 async def get_user_products(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    products = select(UserBook).filter(UserBook.user_id == current_user.id)
-    result = await db.execute(products)
-    final = result.scalars().all()
+    user_products = await user_repo.get_user_products(current_user=current_user, db=db)
     
-    if not final:
+    if not user_products:
         raise HTTPException(
             status_code=400,
             detail="you don't have any product in your cart"
         )
-        
-    UserBook.user_id = current_user.id
-    
-    return {
-        "products": final
-    }
+    return user_products
 
 async def get_me(current_user: User):
     return current_user

@@ -27,16 +27,34 @@ async def create_product(request: Product, db: AsyncSession) -> Book:
 
 async def get_product(id: int, db: AsyncSession = Depends(get_db)):
     product = await product_repo.get_product_by_id(id=id, db=db)
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Book not found with this id"
+        )
+        
     return product
 
 async def get_all_products(db: AsyncSession = Depends(get_db)):
     products = await product_repo.get_all_products(db=db)
+    if not products:
+        raise HTTPException(
+            status_code=404,
+            detail="There is no product"
+        )
+        
     return products
 
 async def update_product(request: ProductUpdate, product_id: int, db: AsyncSession):
     product = await product_repo.update_product(request=request, product_id=product_id, db=db)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
     return product
 
 async def delete_product(product_id: int, db: AsyncSession):
     product = await product_repo.delete_product(product_id=product_id, db=db)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found with this id")
+
     return product

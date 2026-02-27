@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.db.base import Base
 from app.models.product import Book
@@ -14,6 +15,8 @@ class User(Base):
     password: Mapped[str] = mapped_column(String)
     role: Mapped[str] = mapped_column(String, default="User")
     is_active: Mapped[bool] = mapped_column(default=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  
     
     books: Mapped[list["Book"]] = relationship(
         "Book",

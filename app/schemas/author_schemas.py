@@ -16,3 +16,18 @@ class AuthorDisplay(BaseModel):
     model_config = {
         "from_attributes": True   # 🔥 مهمه
     }
+    
+class AuthorRegister(BaseModel):
+    name: str
+    bio: str
+    
+class AuthorUpdate(BaseModel):
+    name: str | None = None
+    bio: str | None = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "authorname"
+            }
+        }

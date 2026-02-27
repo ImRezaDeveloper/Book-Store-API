@@ -10,10 +10,16 @@ class Role(str, enum.Enum):
 
 
 class UserUpdate(BaseModel):
-    username: str
+    username: str | None = None
     email: EmailStr | None = Field(default=None)
-    password: str
+    password: str | None = None
     
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "username": "yourname"
+            }
+        }
 class UserRegister(BaseModel):
     username: str
     email: EmailStr | None = Field(default=None)
